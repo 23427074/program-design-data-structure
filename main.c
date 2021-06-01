@@ -8,6 +8,12 @@
 #include "linklist.h"
 #include "bst.h"
 #include "bs.h"
+#include "hash.h"
+
+void freehash(Hash *makehash)
+{
+    free(makehash->buckets);
+}
 
 void make(int *str, int generate)
 {
@@ -33,7 +39,7 @@ int main(int argc, char **argv)
 {
     struct  timeval start;
     struct  timeval end;
-    double arrtime, arrstime, lltime, llstime, bsttime, bststime, bstime, bsstime;
+    double arrtime, arrstime, lltime, llstime, bsttime, bststime, bstime, bsstime, hashtime, hashstime;
     srand(time(NULL));
     int generate = 0;
     int search = 0;
@@ -108,18 +114,20 @@ int main(int argc, char **argv)
             gettimeofday(&start,NULL);
             while(llcnt!=generate)
             {
-                makell = buildlinked(makell, str[llcnt], &llcnt, generate);
+                buildlinked(&makell, str[llcnt]);
+                llcnt++;
             }
             gettimeofday(&end,NULL);
             lltime = (double)((end.tv_sec*1000000+end.tv_usec)-(start.tv_sec*1000000+start.tv_usec))/1000000.0;
             printf("ll:\n");
             printf("building time: %lf sec\n", lltime);
+            
 
             gettimeofday(&start,NULL);
             for(int j=0;j<search;j++)
             {
                 tmp = (rand()%generate);
-                searchlinked(makell, tmp);
+                searchlinked(&makell, tmp);
             }
             gettimeofday(&end,NULL);
             llstime = (double)((end.tv_sec*1000000+end.tv_usec)-(start.tv_sec*1000000+start.tv_usec))/1000000.0;
@@ -177,6 +185,34 @@ int main(int argc, char **argv)
             printf("query time: %lf sec\n", bsstime);
             free(makebs);
             free(bsarray);
+        }
+        if(strcmp(argv[i],"-hash")==0)
+        {
+            Hash *makehash;
+            makehash = inithash(makehash, generate);
+            int hashcnt=0;
+
+            gettimeofday(&start,NULL);
+            while(hashcnt!=generate)
+            {
+                buildhash(makehash, str[hashcnt]);
+                hashcnt++;
+            }
+            gettimeofday(&end,NULL);
+            hashtime = (double)((end.tv_sec*1000000+end.tv_usec)-(start.tv_sec*1000000+start.tv_usec))/1000000.0;
+            printf("hash:\n");
+            printf("building time: %lf sec\n", hashtime);
+
+            gettimeofday(&start,NULL);
+            for(int j=0;j<search;j++)
+            {
+                tmp = (rand()%generate);
+                searchhash(makehash, tmp);
+            }
+            gettimeofday(&end,NULL);
+            hashstime = (double)((end.tv_sec*1000000+end.tv_usec)-(start.tv_sec*1000000+start.tv_usec))/1000000.0;
+            printf("query time: %lf sec\n", hashstime);
+            freehash(makehash);
         }
     }
     free(str);
